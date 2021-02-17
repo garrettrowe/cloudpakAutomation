@@ -89,7 +89,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
   flavor            = "bx2.16x64"
   worker_count      = "4"
   entitlement       = "cloud_pak"
-  cos_instance_crn  = ibm_resource_instance.cos_instance.id
+  cos_instance_crn  = ibm_resource_instance.cos_cp4d.id
   resource_group_id = data.ibm_resource_group.resource_group.id
   zones {
       subnet_id = ibm_is_subnet.testacc_subnet.id
