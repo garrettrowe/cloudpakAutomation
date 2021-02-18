@@ -74,6 +74,7 @@ EOT
 resource "local_file" "ocscript" {
     filename = "prep.sh"
     content = <<EOT
+ibmcloud oc cluster config -c ${ibm_container_vpc_cluster.cluster.id}
 oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}
 oc create -f ${local_file.kernel.filename}
 ./${local_file.modifyVol.filename}
