@@ -75,10 +75,7 @@ resource "ibm_is_security_group" "testacc_security_group" {
     vpc = ibm_is_vpc.testacc_vpc.id
 }
 
-resource "ibm_is_security_group_network_interface_attachment" "sgnic" {
-  security_group    = ibm_is_security_group.testacc_security_group.id
-  network_interface = ibm_is_instance.testacc_instance.primary_network_interface[0].id
-}
+
 
 resource "ibm_is_security_group_rule" "testacc_security_group_rule_all_ib" {
     group = ibm_is_security_group.testacc_security_group.id
