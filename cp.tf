@@ -182,11 +182,8 @@ resource "null_resource" "ha_timeout" {
     command = "oc annotate route zen-cpd --overwrite haproxy.router.openshift.io/timeout=360s --cluster ${ibm_container_vpc_cluster.cluster.id}"
   }
 }
-resource "null_resource" "kernel_tuning" {
-  provisioner "local-exec" {
-    command = "oc create -f ${local_file.42_cp4d.filename} --cluster ${ibm_container_vpc_cluster.cluster.id}"
-  }
-}
+
+
 resource "null_resource" "modify_vol" {
   provisioner "local-exec" {
     command = "./${local_file.modifyVol.filename}"
