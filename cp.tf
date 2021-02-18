@@ -87,17 +87,31 @@ resource "ibm_resource_instance" "cos_cp4d" {
 resource "ibm_container_vpc_cluster" "cluster" {
   name              = "${local.companysafe}-cp4d"
   vpc_id            = ibm_is_vpc.testacc_vpc.id
-  kube_version      = "4.6_openshift"
+  kube_version      = "4.5_openshift"
   flavor            = "bx2.16x64"
-  worker_count      = "2"
   entitlement       = "cloud_pak"
   disable_public_service_endpoint = false
   cos_instance_crn  = ibm_resource_instance.cos_cp4d.id
   resource_group_id = ibm_resource_group.group.id
   zones {
       subnet_id = ibm_is_subnet.testacc_subnet.id
-      name      = "us-south-1"
+      name      = ibm_is_subnet.testacc_subnet.name
     }
+}
+
+resource "ibm_container_vpc_worker_pool" "pool" {
+  cluster          = ibm_container_vpc_cluster.cluster.id
+  worker_pool_name = "${local.companysafe}-pool"
+  flavor           = "bx2.16x64"
+  entitlement      = "cloud_pak"
+  vpc_id           = ibm_is_vpc.testacc_vpc.id
+  worker_count     = "3"
+  resource_group_id = ibm_resource_group.group.id
+
+  zones {
+    name      = ibm_is_subnet.testacc_subnet.name
+    subnet_id = ibm_is_subnet.testacc_subnet.id
+  }
 }
 
 
