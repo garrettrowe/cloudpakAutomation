@@ -101,6 +101,7 @@ resource "ibm_resource_instance" "cos_cp4d" {
   service  = "cloud-object-storage"
   plan     = "standard"
   location = "global"
+  resource_group_id = ibm_resource_group.group.id
 }
 
 resource "ibm_container_vpc_cluster" "cluster" {
