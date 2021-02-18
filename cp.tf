@@ -83,6 +83,23 @@ resource "ibm_iam_access_group" "accgrp" {
 resource "ibm_resource_group" "group" {
   name = local.company
 }
+resource "ibm_iam_service_id" "serviceID" {
+  name = "automation"
+}
+resource "ibm_iam_service_policy" "policy" {
+  iam_service_id = ibm_iam_service_id.serviceID.id
+  roles          = ["Operator", "Writer", "Reader", "Viewer", "Editor"]
+
+  resources {
+    resource_type = "resource-group"
+    resource_group_id = ibm_resource_group.group.id
+  }
+}
+resource "ibm_iam_service_api_key" "automationkey" {
+  name = "automationkey"
+  iam_service_id = ibm_iam_service_id.serviceID.id
+}
+
 resource "ibm_iam_access_group_policy" "policy" {
   access_group_id = ibm_iam_access_group.accgrp.id
   roles        = ["Operator", "Writer", "Reader", "Viewer", "Editor"]
@@ -176,15 +193,24 @@ resource "ibm_container_addons" "addons" {
   } 
 }
 
-resource "null_resource" "kernel_tuning" {
-  provisioner "local-exec" {
-    command = "oc create -f ${local_file.kernel.filename}"
+resource "ibm_resource_key" "oc_key" {
+  name                 = "${ibm_container_vpc_cluster.wa_instance.name}-key"
+  role                 = "Manager"
+  resource_instance_id = ibm_resource_instance.wa_instance.id
+  timeouts {
+    create = "15m"
+    delete = "15m"
   }
 }
 
-resource "null_resource" "modify_vol" {
-  provisioner "local-exec" {
-    command = "./${local_file.modifyVol.filename}"
+resource "null_resource" "oc_setup" {
+  local-exec { 
+  interpreter = ["/bin/bash" ,"-c"],
+  command = <<-EOT
+    exec "oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}"
+    exec "oc create -f ${local_file.kernel.filename}"
+    exec "./${local_file.modifyVol.filename}"
+EOT
   }
 }
 
