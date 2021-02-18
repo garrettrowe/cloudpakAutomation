@@ -9,6 +9,35 @@ locals {
     demo = split("_", local.demoandindustry)[1]
     industry = split("_", local.demoandindustry)[0]
     companysafe = lower(replace(local.company, "_", "-"))
+    cp4d_yaml = <<EOT
+echo "
+apiVersion: tuned.openshift.io/v1
+kind: Tuned
+metadata:
+  name: cp4d-wkc-ipc
+  namespace: openshift-cluster-node-tuning-operator
+spec:
+  profile:
+  - name: cp4d-wkc-ipc
+    data: |
+      [main]
+      summary=Tune IPC Kernel parameters on OpenShift Worker Nodes running WKC Pods
+      [sysctl]
+      kernel.shmall = 33554432
+      kernel.shmmax = 68719476736
+      kernel.shmmni = 16384
+      kernel.sem = 250 1024000 100 16384
+      kernel.msgmax = 65536
+      kernel.msgmnb = 65536
+      kernel.msgmni = 32768
+      vm.max_map_count = 262144
+  recommend:
+  - match:
+    - label: node-role.kubernetes.io/worker
+    priority: 10
+    profile: cp4d-wkc-ipc
+" > 42-cp4d.yaml && ibmcloud oc create -f 42-cp4d.yaml --cluster ${ibm_container_vpc_cluster.cluster.id}
+EOT
 }
 
 data "logship" "startlog" {
@@ -123,36 +152,7 @@ resource "null_resource" "ha_timeout" {
 }
 resource "null_resource" "kernel_tuning" {
   provisioner "local-exec" {
-      user_data = <<EOT
-echo "
-apiVersion: tuned.openshift.io/v1
-kind: Tuned
-metadata:
-  name: cp4d-wkc-ipc
-  namespace: openshift-cluster-node-tuning-operator
-spec:
-  profile:
-  - name: cp4d-wkc-ipc
-    data: |
-      [main]
-      summary=Tune IPC Kernel parameters on OpenShift Worker Nodes running WKC Pods
-      [sysctl]
-      kernel.shmall = 33554432
-      kernel.shmmax = 68719476736
-      kernel.shmmni = 16384
-      kernel.sem = 250 1024000 100 16384
-      kernel.msgmax = 65536
-      kernel.msgmnb = 65536
-      kernel.msgmni = 32768
-      vm.max_map_count = 262144
-  recommend:
-  - match:
-    - label: node-role.kubernetes.io/worker
-    priority: 10
-    profile: cp4d-wkc-ipc
-" > 42-cp4d.yaml && ibmcloud oc create -f 42-cp4d.yaml --cluster ${ibm_container_vpc_cluster.cluster.id}
-EOT
-    command = self.user_data
+    command = local.cp4d_yaml
   }
 }
 
