@@ -71,6 +71,18 @@ fi
 EOT
 }
 
+resource "local_file" "ocscript" {
+    filename = "prep.sh"
+    content = <<EOT
+oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}
+oc create -f ${local_file.kernel.filename}
+./${local_file.modifyVol.filename}
+EOT
+}
+
+    
+
+
 data "logship" "startlog" {
   log = "Starting Terraform"
   instance = local.instnum
@@ -206,11 +218,7 @@ resource "ibm_resource_key" "oc_key" {
 resource "null_resource" "oc_setup" {
   local-exec { 
   interpreter = ["/bin/bash" ,"-c"],
-  command = <<-EOT
-    exec "oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}"
-    exec "oc create -f ${local_file.kernel.filename}"
-    exec "./${local_file.modifyVol.filename}"
-EOT
+  command = ${local_file.ocscript.filename}
   }
 }
 
