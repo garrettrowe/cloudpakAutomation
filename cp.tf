@@ -10,7 +10,7 @@ locals {
     industry = split("_", local.demoandindustry)[0]
     companysafe = lower(replace(local.company, "_", "-"))
     cp4d_yaml = <<EOT
-echo "
+echo "\
 apiVersion: tuned.openshift.io/v1
 kind: Tuned
 metadata:
@@ -36,7 +36,37 @@ spec:
     - label: node-role.kubernetes.io/worker
     priority: 10
     profile: cp4d-wkc-ipc
-" > 42-cp4d.yaml && ibmcloud oc create -f 42-cp4d.yaml --cluster ${ibm_container_vpc_cluster.cluster.id}
+" > 42-cp4d.yaml && oc create -f 42-cp4d.yaml --cluster ${ibm_container_vpc_cluster.cluster.id}
+EOT
+   cp4d_modifyVol = <<EOT 
+echo "\ 
+#!/bin/bash
+#Increase storage for docker registry
+registry_pv='oc get pvc -n openshift-image-registry --cluster ${ibm_container_vpc_cluster.cluster.id}| grep \"image-registry-storage\" | awk \"{print \$3}\"'
+volid='oc describe pv \$registry_pv -n openshift-image-registry --cluster ${ibm_container_vpc_cluster.cluster.id} | grep volumeId'
+IFS='='
+read -ra vol <<< '\$volid'
+volume=\${vol[1]}
+
+ibmcloud sl file volume-detail \$volume
+
+if [[ \$? -eq 0 ]]; then
+capval=\`ibmcloud sl file volume-detail \$volume | awk '\$1==\"Capacity\" {print \$3}'\`
+  if [[ \$capval < 200 ]]; then
+     ibmcloud sl file volume-modify \$volume --new-size 200 --force
+     for i in {1..10}; do
+       cap=\`ibmcloud sl file volume-detail \$volume | awk '\$1==\"Capacity\" {print \$3}'\`
+       if [[ \$cap == 200 ]]; then
+         break
+       else
+         sleep 30
+       fi
+    done
+  fi
+fi
+" > modifyVol.sh
+chmod a+x modifyVol.sh
+./modifyVol.sh
 EOT
 }
 
@@ -148,7 +178,7 @@ resource "ibm_container_addons" "addons" {
 
 resource "null_resource" "ha_timeout" {
   provisioner "local-exec" {
-    command = "ibmcloud oc annotate route zen-cpd --overwrite haproxy.router.openshift.io/timeout=360s --cluster ${ibm_container_vpc_cluster.cluster.id}"
+    command = "oc annotate route zen-cpd --overwrite haproxy.router.openshift.io/timeout=360s --cluster ${ibm_container_vpc_cluster.cluster.id}"
   }
 }
 resource "null_resource" "kernel_tuning" {
@@ -156,6 +186,12 @@ resource "null_resource" "kernel_tuning" {
     command = local.cp4d_yaml
   }
 }
+resource "null_resource" "kernel_tuning" {
+  provisioner "local-exec" {
+    command = local.cp4d_modifyVol
+  }
+}
+
 
     
 
