@@ -186,14 +186,14 @@ resource "ibm_container_addons" "addons" {
   } 
 }
 
-resource "null_resource" "oc_setup5" {
+resource "null_resource" "oc_setup6" {
   provisioner "local-exec" { 
     command = <<EOT
 echo "begin setup"
-ibmcloud login --apikey ${ibm_iam_service_api_key.automationkey.apikey} -g ${ibm_resource_group.group.id} --no-region
+ibmcloud login --apikey ${ibm_iam_service_api_key.automationkey.apikey} -g ${ibm_resource_group.group.name} --no-region
 ibmcloud oc cluster config -c ${ibm_container_vpc_cluster.cluster.name}
 echo "oc login"
-oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}
+oc login
 oc create -f ${local_file.kernel.filename}
 ./${local_file.modifyVol.filename}
 EOT
