@@ -50,7 +50,7 @@ registry_pv='oc get pvc -n openshift-image-registry --cluster ${ibm_container_vp
 volid='oc describe pv \$registry_pv -n openshift-image-registry --cluster ${ibm_container_vpc_cluster.cluster.id} | grep volumeId'
 IFS='='
 read -ra vol <<< '\$volid'
-volume=\${vol[1]}
+volume=$${vol[1]}
 
 ibmcloud sl file volume-detail \$volume
 
