@@ -109,7 +109,7 @@ resource "ibm_iam_service_policy" "policy" {
 }
 resource "ibm_iam_service_api_key" "automationkey" {
   name = "automationkey"
-  iam_service_id = ibm_iam_service_id.serviceID.id
+  iam_service_id = ibm_iam_service_id.serviceID.iam_id
 }
 
 resource "ibm_iam_access_group_policy" "policy" {
