@@ -69,26 +69,6 @@ data "logship" "gatewaylog" {
   instance = local.instnum
 }
 
-resource "ibm_is_security_group" "testacc_security_group" {
-    name = "${local.companysafe}-securitygroup"
-    resource_group = ibm_resource_group.group.id
-    vpc = ibm_is_vpc.testacc_vpc.id
-}
-
-
-
-resource "ibm_is_security_group_rule" "testacc_security_group_rule_all_ib" {
-    group = ibm_is_security_group.testacc_security_group.id
-    direction = "inbound"
-    remote = "0.0.0.0/0"
- }
-
-resource "ibm_is_security_group_rule" "testacc_security_group_rule_all_ob" {
-    group = ibm_is_security_group.testacc_security_group.id
-    direction = "outbound"
-    remote = "0.0.0.0/0"
- }
-
 
 resource "sshkey" "testacc_sshkey" {
   name       = "automationmanager"
@@ -109,7 +89,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
   vpc_id            = ibm_is_vpc.testacc_vpc.id
   kube_version      = "4.6_openshift"
   flavor            = "bx2.16x64"
-  worker_count      = "4"
+  worker_count      = "2"
   entitlement       = "cloud_pak"
   disable_public_service_endpoint = false
   cos_instance_crn  = ibm_resource_instance.cos_cp4d.id
