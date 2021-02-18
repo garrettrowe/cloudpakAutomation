@@ -217,8 +217,7 @@ resource "ibm_resource_key" "oc_key" {
 
 resource "null_resource" "oc_setup" {
   local-exec { 
-  interpreter = ["/bin/bash" ,"-c"],
-  command = ${local_file.ocscript.filename}
+    command = "./${local_file.ocscript.filename}"
   }
 }
 
