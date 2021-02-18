@@ -187,7 +187,7 @@ resource "null_resource" "kernel_tuning" {
     command = "oc create -f ${local_file.42-cp4d.filename} --cluster ${ibm_container_vpc_cluster.cluster.id}"
   }
 }
-resource "null_resource" "kernel_tuning" {
+resource "null_resource" "modify_vol" {
   provisioner "local-exec" {
     command = "chmod a+x ${local_file.modifyVol.filename} && ./${local_file.modifyVol.filename}"
   }
