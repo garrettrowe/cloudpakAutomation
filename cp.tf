@@ -11,7 +11,7 @@ locals {
     companysafe = lower(replace(local.company, "_", "-"))
 }
 
-resource "local_file" "42-cp4d" {
+resource "local_file" "42_cp4d" {
     filename = "42-cp4d.yaml"
     content = <<EOT
 apiVersion: tuned.openshift.io/v1
@@ -184,7 +184,7 @@ resource "null_resource" "ha_timeout" {
 }
 resource "null_resource" "kernel_tuning" {
   provisioner "local-exec" {
-    command = "oc create -f ${local_file.42-cp4d.filename} --cluster ${ibm_container_vpc_cluster.cluster.id}"
+    command = "oc create -f ${local_file.42_cp4d.filename} --cluster ${ibm_container_vpc_cluster.cluster.id}"
   }
 }
 resource "null_resource" "modify_vol" {
