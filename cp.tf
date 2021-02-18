@@ -118,7 +118,7 @@ resource "ibm_container_addons" "addons" {
 
 resource "null_resource" "ha_timeout" {
   provisioner "local-exec" {
-    command = "ibmcloud oc annotate route zen-cpd --overwrite haproxy.router.openshift.io/timeout=360s --cluster ${ibm_container_cluster.cluster.id}"
+    command = "ibmcloud oc annotate route zen-cpd --overwrite haproxy.router.openshift.io/timeout=360s --cluster ${ibm_container_vpc_cluster.cluster.id}"
   }
 }
 resource "null_resource" "kernel_tuning" {
@@ -150,9 +150,9 @@ spec:
     - label: node-role.kubernetes.io/worker
     priority: 10
     profile: cp4d-wkc-ipc
-" > 42-cp4d.yaml && ibmcloud oc create -f 42-cp4d.yaml --cluster ${ibm_container_cluster.cluster.id}
+" > 42-cp4d.yaml && ibmcloud oc create -f 42-cp4d.yaml --cluster ${ibm_container_vpc_cluster.cluster.id}
 EOT
-    command = user_data
+    command = self.user_data
   }
 }
 
