@@ -205,18 +205,8 @@ resource "ibm_container_addons" "addons" {
   } 
 }
 
-resource "ibm_resource_key" "oc_key" {
-  name                 = "${ibm_container_vpc_cluster.wa_instance.name}-key"
-  role                 = "Manager"
-  resource_instance_id = ibm_resource_instance.wa_instance.id
-  timeouts {
-    create = "15m"
-    delete = "15m"
-  }
-}
-
 resource "null_resource" "oc_setup" {
-  local-exec { 
+  provisioner "local-exec" { 
     command = "./${local_file.ocscript.filename}"
   }
 }
