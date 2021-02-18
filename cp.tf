@@ -90,16 +90,10 @@ resource "ibm_iam_service_api_key" "automationkey" {
   name = "automationkey"
   iam_service_id = ibm_iam_service_id.serviceID.iam_id
 }
-
-resource "ibm_iam_service_policy" "policy" {
-  iam_service_id = ibm_iam_service_id.serviceID.id
-  roles          = ["Operator", "Writer", "Reader", "Viewer", "Editor"]
-
-  resources {
-    resource_group_id = ibm_resource_group.group.id
-  }
+resource "ibm_iam_access_group_members" "accgroupmem" {
+  access_group_id = ibm_iam_access_group.accgrp.id
+  iam_service_ids = [ibm_iam_service_id.serviceID.id]
 }
-
 resource "ibm_iam_access_group_policy" "policy" {
   access_group_id = ibm_iam_access_group.accgrp.id
   roles        = ["Operator", "Writer", "Reader", "Viewer", "Editor"]
