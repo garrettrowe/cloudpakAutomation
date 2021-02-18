@@ -206,10 +206,12 @@ resource "ibm_container_addons" "addons" {
   } 
 }
 
-resource "null_resource" "oc_setup1" {
+resource "null_resource" "oc_setup" {
   provisioner "local-exec" { 
     command = <<EOT
+echo "begin setup"
 ibmcloud oc cluster config -c ${ibm_container_vpc_cluster.cluster.id}
+echo "oc login"
 oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}
 oc create -f ${local_file.kernel.filename}
 ./${local_file.modifyVol.filename}
