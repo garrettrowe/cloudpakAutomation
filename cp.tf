@@ -10,7 +10,7 @@ locals {
     industry = split("_", local.demoandindustry)[0]
     companysafe = lower(replace(local.company, "_", "-"))
     cp4d_yaml = <<EOT
-echo "\
+echo <<EOECHO
 apiVersion: tuned.openshift.io/v1
 kind: Tuned
 metadata:
@@ -36,10 +36,10 @@ spec:
     - label: node-role.kubernetes.io/worker
     priority: 10
     profile: cp4d-wkc-ipc
-" > 42-cp4d.yaml && oc create -f 42-cp4d.yaml --cluster ${ibm_container_vpc_cluster.cluster.id}
+EOECHO > 42-cp4d.yaml && oc create -f 42-cp4d.yaml --cluster ${ibm_container_vpc_cluster.cluster.id}
 EOT
    cp4d_modifyVol = <<EOT 
-echo "\ 
+echo <<EOECHO 
 #!/bin/bash
 #Increase storage for docker registry
 registry_pv='oc get pvc -n openshift-image-registry --cluster ${ibm_container_vpc_cluster.cluster.id}| grep \"image-registry-storage\" | awk \"{print \$3}\"'
@@ -64,7 +64,7 @@ capval=\`ibmcloud sl file volume-detail \$volume | awk '\$1==\"Capacity\" {print
     done
   fi
 fi
-" > modifyVol.sh
+EOECHO > modifyVol.sh
 chmod a+x modifyVol.sh
 ./modifyVol.sh
 EOT
