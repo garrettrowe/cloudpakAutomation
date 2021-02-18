@@ -123,7 +123,7 @@ resource "null_resource" "ha_timeout" {
 }
 resource "null_resource" "kernel_tuning" {
   provisioner "local-exec" {
-    command = <<-EOT 
+      user_data = <<EOT
 echo "
 apiVersion: tuned.openshift.io/v1
 kind: Tuned
@@ -152,6 +152,7 @@ spec:
     profile: cp4d-wkc-ipc
 " > 42-cp4d.yaml && ibmcloud oc create -f 42-cp4d.yaml --cluster ${ibm_container_cluster.cluster.id}
 EOT
+    command = user_data
   }
 }
 
