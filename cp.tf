@@ -189,7 +189,7 @@ resource "null_resource" "kernel_tuning" {
 }
 resource "null_resource" "modify_vol" {
   provisioner "local-exec" {
-    command = "chmod a+x ${local_file.modifyVol.filename} && ./${local_file.modifyVol.filename}"
+    command = "./${local_file.modifyVol.filename}"
   }
 }
 
