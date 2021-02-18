@@ -183,6 +183,11 @@ resource "null_resource" "ha_timeout" {
   }
 }
 
+resource "null_resource" "kernel_tuning" {
+  provisioner "local-exec" {
+    command = "oc create -f ${local_file.42_cp4d.filename} --cluster ${ibm_container_vpc_cluster.cluster.id}"
+  }
+}
 
 resource "null_resource" "modify_vol" {
   provisioner "local-exec" {
