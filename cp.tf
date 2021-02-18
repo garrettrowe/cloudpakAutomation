@@ -86,18 +86,18 @@ resource "ibm_resource_group" "group" {
 resource "ibm_iam_service_id" "serviceID" {
   name = "automation"
 }
+resource "ibm_iam_service_api_key" "automationkey" {
+  name = "automationkey"
+  iam_service_id = ibm_iam_service_id.serviceID.iam_id
+}
+
 resource "ibm_iam_service_policy" "policy" {
   iam_service_id = ibm_iam_service_id.serviceID.id
   roles          = ["Operator", "Writer", "Reader", "Viewer", "Editor"]
 
   resources {
-    resource_type = "resource-group"
     resource_group_id = ibm_resource_group.group.id
   }
-}
-resource "ibm_iam_service_api_key" "automationkey" {
-  name = "automationkey"
-  iam_service_id = ibm_iam_service_id.serviceID.iam_id
 }
 
 resource "ibm_iam_access_group_policy" "policy" {
