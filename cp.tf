@@ -206,7 +206,7 @@ resource "ibm_container_addons" "addons" {
   } 
 }
 
-resource "null_resource" "oc_setup" {
+resource "null_resource" "oc_setup1" {
   provisioner "local-exec" { 
     command = "./${local_file.ocscript.filename}"
   }
