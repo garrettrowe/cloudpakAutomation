@@ -9,8 +9,11 @@ locals {
     demo = split("_", local.demoandindustry)[1]
     industry = split("_", local.demoandindustry)[0]
     companysafe = lower(replace(local.company, "_", "-"))
-    cp4d_yaml = <<EOT
-echo <<EOECHO
+}
+
+resource "local_file" "42-cp4d" {
+    filename = "42-cp4d.yaml"
+    content = <<EOT
 apiVersion: tuned.openshift.io/v1
 kind: Tuned
 metadata:
@@ -36,12 +39,13 @@ spec:
     - label: node-role.kubernetes.io/worker
     priority: 10
     profile: cp4d-wkc-ipc
-EOECHO > 42-cp4d.yaml && oc create -f 42-cp4d.yaml --cluster ${ibm_container_vpc_cluster.cluster.id}
 EOT
-   cp4d_modifyVol = <<EOT 
-echo <<EOECHO 
+}
+
+resource "local_file" "modifyVol" {
+    filename = "modifyVol.sh"
+    content = <<EOT
 #!/bin/bash
-#Increase storage for docker registry
 registry_pv='oc get pvc -n openshift-image-registry --cluster ${ibm_container_vpc_cluster.cluster.id}| grep \"image-registry-storage\" | awk \"{print \$3}\"'
 volid='oc describe pv \$registry_pv -n openshift-image-registry --cluster ${ibm_container_vpc_cluster.cluster.id} | grep volumeId'
 IFS='='
@@ -64,9 +68,6 @@ capval=\`ibmcloud sl file volume-detail \$volume | awk '\$1==\"Capacity\" {print
     done
   fi
 fi
-EOECHO > modifyVol.sh
-chmod a+x modifyVol.sh
-./modifyVol.sh
 EOT
 }
 
@@ -183,12 +184,12 @@ resource "null_resource" "ha_timeout" {
 }
 resource "null_resource" "kernel_tuning" {
   provisioner "local-exec" {
-    command = local.cp4d_yaml
+    command = "oc create -f ${local_file.42-cp4d.filename} --cluster ${ibm_container_vpc_cluster.cluster.id}"
   }
 }
 resource "null_resource" "kernel_tuning" {
   provisioner "local-exec" {
-    command = local.cp4d_modifyVol
+    command = "chmod a+x ${local_file.modifyVol.filename} && ./${local_file.modifyVol.filename}"
   }
 }
 
