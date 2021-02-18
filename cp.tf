@@ -20,6 +20,10 @@ metadata:
   name: cp4d-wkc-ipc
   namespace: openshift-cluster-node-tuning-operator
 spec:
+  tls:
+    - hosts:
+        - ${ibm_container_vpc_cluster.cluster.ingress_hostname}
+      secretName: ${ibm_container_vpc_cluster.cluster.ingress_secret}
   profile:
   - name: cp4d-wkc-ipc
     data: |
@@ -151,7 +155,6 @@ resource "ibm_container_vpc_cluster" "cluster" {
   flavor            = "bx2.16x64"
   worker_count      = "4"
   entitlement       = "cloud_pak"
-  wait_till         = "MasterNodeReady"
   disable_public_service_endpoint = false
   cos_instance_crn  = ibm_resource_instance.cos_cp4d.id
   resource_group_id = ibm_resource_group.group.id
