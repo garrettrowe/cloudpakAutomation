@@ -95,7 +95,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
   resource_group_id = ibm_resource_group.group.id
   zones {
       subnet_id = ibm_is_subnet.testacc_subnet.id
-      name      = ibm_is_subnet.testacc_subnet.name
+      name      = ibm_is_subnet.testacc_subnet.zone
     }
 }
 
@@ -109,7 +109,7 @@ resource "ibm_container_vpc_worker_pool" "pool" {
   resource_group_id = ibm_resource_group.group.id
 
   zones {
-    name      = ibm_is_subnet.testacc_subnet.name
+    name      = ibm_is_subnet.testacc_subnet.zone
     subnet_id = ibm_is_subnet.testacc_subnet.id
   }
 }
