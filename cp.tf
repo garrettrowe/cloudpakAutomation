@@ -71,19 +71,6 @@ fi
 EOT
 }
 
-resource "local_file" "ocscript" {
-    filename = "prep.sh"
-    content = <<EOT
-ibmcloud oc cluster config -c ${ibm_container_vpc_cluster.cluster.id}
-oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}
-oc create -f ${local_file.kernel.filename}
-./${local_file.modifyVol.filename}
-EOT
-}
-
-    
-
-
 data "logship" "startlog" {
   log = "Starting Terraform"
   instance = local.instnum
@@ -159,7 +146,6 @@ data "logship" "gatewaylog" {
   instance = local.instnum
 }
 
-
 resource "sshkey" "testacc_sshkey" {
   name       = "automationmanager"
   resource_group = ibm_resource_group.group.id
@@ -210,9 +196,9 @@ resource "null_resource" "oc_setup" {
   provisioner "local-exec" { 
     command = <<EOT
 echo "begin setup"
-ibmcloud oc cluster config -c ${ibm_container_vpc_cluster.cluster.id}
+ibmcloud oc cluster config -c ${ibm_container_vpc_cluster.cluster.name}
 echo "oc login"
-oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}
+oc login ${ibm_container_vpc_cluster.cluster.public_service_endpoint_url} -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}
 oc create -f ${local_file.kernel.filename}
 ./${local_file.modifyVol.filename}
 EOT
