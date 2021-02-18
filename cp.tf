@@ -104,20 +104,57 @@ resource "ibm_container_addons" "addons" {
   cluster = ibm_container_vpc_cluster.cluster.name
   addons {
     name    = "kube-terminal"
-    version = "1.0.0"
   }
   addons {
     name    = "static-route"
-    version = "1.0.0"
   }
   addons {
     name    = "cluster-autoscaler"
-    version = "1.0.1"
+  }
+  addons {
+    name    = "openshift-container-storage"
+  } 
+}
+
+resource "null_resource" "ha_timeout" {
+  provisioner "local-exec" {
+    command = "ibmcloud oc annotate route zen-cpd --overwrite haproxy.router.openshift.io/timeout=360s --cluster ${ibm_container_cluster.cluster.id}"
+  }
+}
+resource "null_resource" "kernel_tuning" {
+  provisioner "local-exec" {
+    inline = "cat <<FILE > 42-cp4d.yaml
+apiVersion: tuned.openshift.io/v1
+kind: Tuned
+metadata:
+  name: cp4d-wkc-ipc
+  namespace: openshift-cluster-node-tuning-operator
+spec:
+  profile:
+  - name: cp4d-wkc-ipc
+    data: |
+      [main]
+      summary=Tune IPC Kernel parameters on OpenShift Worker Nodes running WKC Pods
+      [sysctl]
+      kernel.shmall = 33554432
+      kernel.shmmax = 68719476736
+      kernel.shmmni = 16384
+      kernel.sem = 250 1024000 100 16384
+      kernel.msgmax = 65536
+      kernel.msgmnb = 65536
+      kernel.msgmni = 32768
+      vm.max_map_count = 262144
+  recommend:
+  - match:
+    - label: node-role.kubernetes.io/worker
+    priority: 10
+    profile: cp4d-wkc-ipc
+FILE"
+
+    command = "ibmcloud oc create -f 42-cp4d.yaml --cluster ${ibm_container_cluster.cluster.id}"
   }
 }
 
-
-
-
+    
 
 
