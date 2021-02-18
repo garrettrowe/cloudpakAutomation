@@ -46,7 +46,7 @@ resource "local_file" "modifyVol" {
     filename = "modifyVol.sh"
     content = <<EOT
 #!/bin/bash
-registry_pv='ibmcloud oc get pvc -n openshift-image-registry --cluster ${ibm_container_vpc_cluster.cluster.id}| grep \"image-registry-storage\" | awk \"{print \$3}\"'
+registry_pv='oc get pvc -n openshift-image-registry --cluster ${ibm_container_vpc_cluster.cluster.id}| grep \"image-registry-storage\" | awk \"{print \$3}\"'
 volid='oc describe pv \$registry_pv -n openshift-image-registry --cluster ${ibm_container_vpc_cluster.cluster.id} | grep volumeId'
 IFS='='
 read -ra vol <<< '\$volid'
@@ -179,7 +179,7 @@ resource "ibm_container_addons" "addons" {
 
 resource "null_resource" "kernel_tuning" {
   provisioner "local-exec" {
-    command = "ibmcloud oc create -f ${local_file.kernel.filename} --cluster ${ibm_container_vpc_cluster.cluster.id}"
+    command = "oc create -f ${local_file.kernel.filename} --cluster ${ibm_container_vpc_cluster.cluster.id}"
   }
 }
 
