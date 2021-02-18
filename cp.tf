@@ -123,7 +123,8 @@ resource "null_resource" "ha_timeout" {
 }
 resource "null_resource" "kernel_tuning" {
   provisioner "local-exec" {
-    command = "echo <<FILE 
+    command = <<EOT 
+echo "
 apiVersion: tuned.openshift.io/v1
 kind: Tuned
 metadata:
@@ -149,7 +150,8 @@ spec:
     - label: node-role.kubernetes.io/worker
     priority: 10
     profile: cp4d-wkc-ipc
-FILE > 42-cp4d.yaml && ibmcloud oc create -f 42-cp4d.yaml --cluster ${ibm_container_cluster.cluster.id}"
+" > 42-cp4d.yaml && ibmcloud oc create -f 42-cp4d.yaml --cluster ${ibm_container_cluster.cluster.id}
+EOT
   }
 }
 
