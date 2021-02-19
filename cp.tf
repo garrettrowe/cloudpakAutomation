@@ -185,7 +185,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 }
 
 data "external" "workers" {
-  program = ["${path.root}/${local_file.workers.filename}"]
+  program = ["${abspath(path.root)}/${local_file.workers.filename}"]
 }
 output "instance_ip_addr" {
   value = data.external.workers.result
