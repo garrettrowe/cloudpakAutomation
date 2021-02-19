@@ -184,7 +184,7 @@ resource "ibm_container_addons" "addons" {
   } 
 }
 
-resource "null_resource" "oc_setup8" {
+resource "null_resource" "oc_setup9" {
   provisioner "local-exec" { 
     command = <<EOT
 echo "begin setup"
