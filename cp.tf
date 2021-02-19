@@ -14,14 +14,7 @@ locals {
 locals {
     entitlementKey = var.entitlementKey != "null" ? var.entitlementKey : ibm_iam_service_api_key.automationkey.apikey
 }
-resource "local_file" "workers" {
-    filename = "${path.cwd}/workers.sh"
-    content = <<EOT
-#!/bin/bash
-ibmcloud login -q --apikey ${ibm_iam_service_api_key.automationkey.apikey} --no-region
-ibmcloud oc worker ls --cluster ${ibm_container_vpc_cluster.cluster.name} -q --output json
-EOT
-}
+
 resource "local_file" "kernel" {
     filename = "42-cp4d.yaml"
     content = <<EOT
@@ -184,13 +177,6 @@ resource "ibm_container_vpc_cluster" "cluster" {
     }
 }
 
-data "external" "workers" {
-  program = ["bash", "-c 'ibmcloud login -q --apikey ${ibm_iam_service_api_key.automationkey.apikey} --no-region && ibmcloud oc worker ls --cluster ${ibm_container_vpc_cluster.cluster.name} -q --output json'"]
-}
-output "instance_ip_addr" {
-  value = data.external.workers.result
-}
-
 
 resource "ibm_container_addons" "addons" {
   cluster = ibm_container_vpc_cluster.cluster.name
@@ -205,6 +191,9 @@ resource "ibm_container_addons" "addons" {
   }
   addons {
     name    = "openshift-container-storage"
+  } 
+  addons {
+    name    = "vpc-block-csi-driver"
   } 
 }
 
