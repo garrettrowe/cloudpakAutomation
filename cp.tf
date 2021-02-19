@@ -94,7 +94,7 @@ resource "ibm_iam_access_group_members" "accgroupmem" {
 }
 resource "ibm_iam_access_group_policy" "policy" {
   access_group_id = ibm_iam_access_group.accgrp.id
-  roles        = ["Operator", "Writer", "Reader", "Viewer", "Editor"]
+  roles        = ["Operator", "Writer", "Reader", "Viewer", "Editor", "Manager", "Administrator"]
 
   resources {
     resource_group_id = ibm_resource_group.group.id
