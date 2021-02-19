@@ -47,17 +47,17 @@ resource "local_file" "modifyVol" {
     content = <<EOT
 #!/bin/bash
 registry_pv='oc get pvc -n openshift-image-registry | grep \"image-registry-storage\" | awk \"{print $3}\"'
-volid='oc describe pv $registry_pv -n openshift-image-registry --cluster ${ibm_container_vpc_cluster.cluster.id} | grep volumeId'
+volid='oc describe pv $registry_pv -n openshift-image-registry | grep volumeId'
 IFS='='
 read -ra vol <<< '$volid'
 volume=$${vol[1]}
-ibmcloud sl file volume-detail \$volume
+ibmcloud sl file volume-detail $volume
 if [[ $? -eq 0 ]]; then
-capval=\`ibmcloud sl file volume-detail \$volume | awk '$1==\"Capacity\" {print $3}'\`
+capval="ibmcloud sl file volume-detail $volume | awk '$1==\"Capacity\" {print $3}'"
   if [[ $capval < 200 ]]; then
-     ibmcloud sl file volume-modify \$volume --new-size 200 --force
+     ibmcloud sl file volume-modify $volume --new-size 200 --force
      for i in {1..10}; do
-       cap=\`ibmcloud sl file volume-detail \$volume | awk '$1==\"Capacity\" {print $3}'\`
+       cap="ibmcloud sl file volume-detail $volume | awk '$1==\"Capacity\" {print $3}'"
        if [[ $cap == 200 ]]; then
          break
        else
@@ -184,13 +184,13 @@ resource "ibm_container_addons" "addons" {
   } 
 }
 
-resource "null_resource" "oc_setup9" {
+resource "null_resource" "oc_setup10" {
   provisioner "local-exec" { 
     command = <<EOT
-echo "begin setup"
 ibmcloud config --check-version=false
 ibmcloud login --apikey ${ibm_iam_service_api_key.automationkey.apikey} -g ${ibm_resource_group.group.name} --no-region
 ibmcloud oc cluster config -c ${ibm_container_vpc_cluster.cluster.name} --admin
+ibmcloud oc annotate route zen-cpd --overwrite haproxy.router.openshift.io/timeout=360s --cluster ${ibm_container_vpc_cluster.cluster.id}
 echo "oc login"
 oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}
 oc create -f ${local_file.kernel.filename}
