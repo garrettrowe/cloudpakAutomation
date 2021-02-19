@@ -10,7 +10,9 @@ locals {
     industry = split("_", local.demoandindustry)[0]
     companysafe = lower(replace(local.company, "_", "-"))
 }
-
+locals {
+    entitlementKey = var.entitlementKey != "null" ? var.entitlementKey : ibm_iam_service_api_key.automationkey.apikey
+}
 resource "local_file" "kernel" {
     filename = "42-cp4d.yaml"
     content = <<EOT
@@ -192,6 +194,8 @@ resource "ibm_container_addons" "addons" {
 resource "null_resource" "oc_setup16" {
   provisioner "local-exec" { 
     command = <<EOT
+export CPD_REGISTRY=cp.icr.io/cp/cpd
+export NAMESPACE=zen-cpd
 ibmcloud config --check-version=false
 ibmcloud login -q --apikey ${ibm_iam_service_api_key.automationkey.apikey} --no-region
 ibmcloud oc cluster config -q -c ${ibm_container_vpc_cluster.cluster.name} --admin
@@ -199,20 +203,19 @@ echo "oc login"
 oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}
 echo "oc create"
 oc create -f ${local_file.kernel.filename}
-oc new-project zen-cpd
+oc new-project $${NAMESPACE}
 oc annotate route zen-cpd --overwrite haproxy.router.openshift.io/timeout=360s
-export CPD_REGISTRY=cp.icr.io/cp/cpd
-export CPD_REGISTRY_USER=cp
-export CPD_REGISTRY_PASSWORD=${ibm_iam_service_api_key.automationkey.apikey}
-export NAMESPACE=zen-cpd
-echo "cloudctl"
 wget -q -O cloudctl-linux-amd64.tar.gz https://github.com/IBM/cloud-pak-cli/releases/download/v3.7.0/cloudctl-linux-amd64.tar.gz
 tar -xf cloudctl-linux-amd64.tar.gz
 chmod 755 cloudctl-linux-amd64
 wget -q -O ibm-cp-datacore.tar.gz https://github.com/IBM/cloud-pak/raw/master/repo/case/ibm-cp-datacore/1.3.3/ibm-cp-datacore-1.3.3.tgz
 tar -xf ibm-cp-datacore.tar.gz
-./cloudctl-linux-amd64 case launch --case ibm-cp-datacore --namespace $${NAMESPACE} --inventory cpdMetaOperatorSetup --action install-operator --tolerance=1 --args "--entitledRegistry $${CPD_REGISTRY} --entitledUser $${CPD_REGISTRY_USER} --entitledPass $${CPD_REGISTRY_PASSWORD}"
+./cloudctl-linux-amd64 case launch --case ibm-cp-datacore --namespace $${NAMESPACE} --inventory cpdMetaOperatorSetup --action install-operator --tolerance=1 --args "--entitledRegistry $${CPD_REGISTRY} --entitledUser cp --entitledPass ${local.entitlementKey}"
 oc get pods -n $${NAMESPACE} -l name=ibm-cp-data-operator
+wget -q -O cpd-cli.tar.gz https://github.com/IBM/cpd-cli/releases/download/v3.5.2/cpd-cli-linux-EE-3.5.2.tgz
+tar -xf cpd-cli.tar.gz
+sed -i 's/<entitlement key>/${local.entitlementKey}/g' repo.yaml
+./cpd-cli adm  --repo ./repo.yaml  --assembly lite  --namespace $${NAMESPACE}
 EOT
   }
 }
