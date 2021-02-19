@@ -209,8 +209,8 @@ echo "cloudctl"
 wget -q -O cloudctl-linux-amd64.tar.gz https://github.com/IBM/cloud-pak-cli/releases/download/v3.7.0/cloudctl-linux-amd64.tar.gz
 tar -xf cloudctl-linux-amd64.tar.gz
 chmod 755 cloudctl-linux-amd64
-wget -q -O cp4d.tar.gz https://github.com/IBM/cloud-pak/archive/cp4d-2.5.0.tar.gz
-tar -xf cp4d.tar.gz
+wget -q -O ibm-cp-datacore.tar.gz https://github.com/IBM/cloud-pak/raw/master/repo/case/ibm-cp-datacore/1.3.3/ibm-cp-datacore-1.3.3.tgz
+tar -xf ibm-cp-datacore.tar.gz
 ./cloudctl-linux-amd64 case launch --case ibm-cp-datacore --namespace $${NAMESPACE} --inventory cpdMetaOperatorSetup --action install-operator --tolerance=1 --args "--entitledRegistry $${CPD_REGISTRY} --entitledUser $${CPD_REGISTRY_USER} --entitledPass $${CPD_REGISTRY_PASSWORD}"
 oc get pods -n $${NAMESPACE} -l name=ibm-cp-data-operator
 EOT
