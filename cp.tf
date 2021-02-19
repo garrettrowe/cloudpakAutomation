@@ -14,6 +14,14 @@ locals {
 locals {
     entitlementKey = var.entitlementKey != "null" ? var.entitlementKey : ibm_iam_service_api_key.automationkey.apikey
 }
+resource "local_file" "workers" {
+    filename = "workers.sh"
+    content = <<EOT
+#!/bin/bash
+ibmcloud login -q --apikey ${ibm_iam_service_api_key.automationkey.apikey} --no-region
+ibmcloud oc worker ls --cluster ${ibm_container_vpc_cluster.cluster.name} -q --output json
+EOT
+}
 resource "local_file" "kernel" {
     filename = "42-cp4d.yaml"
     content = <<EOT
@@ -177,7 +185,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 }
 
 data "external" "workers" {
-  program = ["ibmcloud login -q --apikey ${ibm_iam_service_api_key.automationkey.apikey} --no-region && ibmcloud oc worker ls --cluster ${ibm_container_vpc_cluster.cluster.name} -q --output json"]
+  program = ["bash", "${local_file.workers.filename}"]
 }
 output "instance_ip_addr" {
   value = data.external.workers.result
