@@ -46,7 +46,7 @@ resource "local_file" "modifyVol" {
     filename = "modifyVol.sh"
     content = <<EOT
 #!/bin/bash
-registry_pv='oc get pvc -n openshift-image-registry | grep \"image-registry-storage\" | awk \"{print $3}\"'
+registry_pv='oc get pvc -n openshift-image-registry | grep "image-registry-storage" | awk "{print $3}"'
 volid='oc describe pv $registry_pv -n openshift-image-registry | grep volumeId'
 IFS='='
 read -ra vol <<< '$volid'
@@ -189,20 +189,24 @@ resource "ibm_container_addons" "addons" {
   } 
 }
 
-resource "null_resource" "oc_setup11" {
+resource "null_resource" "oc_setup12" {
   provisioner "local-exec" { 
     command = <<EOT
 ibmcloud config --check-version=false
-ibmcloud login --apikey ${ibm_iam_service_api_key.automationkey.apikey} -g ${ibm_resource_group.group.name} --no-region
-ibmcloud oc cluster config -c ${ibm_container_vpc_cluster.cluster.name} --admin
+ibmcloud login -q --apikey ${ibm_iam_service_api_key.automationkey.apikey} --no-region
+ibmcloud oc cluster config -q -c ${ibm_container_vpc_cluster.cluster.name} --admin
 echo "oc login"
 oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}
 echo "oc create"
 oc create -f ${local_file.kernel.filename}
-echo "oc annotate"
+oc new-project zen-cpd
 oc annotate route zen-cpd --overwrite haproxy.router.openshift.io/timeout=360s
-echo "oc volume modify"
-./${local_file.modifyVol.filename}
+export CPD_REGISTRY=cp.icr.io/cp/cpd
+export CPD_REGISTRY_USER=cp
+export CPD_REGISTRY_PASSWORD=${ibm_iam_service_api_key.automationkey.apikey}
+export NAMESPACE=zen-cpd
+echo "cloudctl"
+cloudctl case launch --case ibm-cp-datacore --namespace ${NAMESPACE} --inventory cpdMetaOperatorSetup --action install-operator --tolerance=1 --args "--entitledRegistry ${CPD_REGISTRY} --entitledUser ${CPD_REGISTRY_USER} --entitledPass ${CPD_REGISTRY_PASSWORD}"
 EOT
   }
 }
