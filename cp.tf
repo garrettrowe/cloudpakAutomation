@@ -177,7 +177,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 }
 
 data "external" "workers" {
-  program = ["ibmcloud", "oc worker ls --cluster ${ibm_container_vpc_cluster.cluster.name} -q --output json"]
+  program = ["ibmcloud", "oc", "worker", "ls", "--cluster", ibm_container_vpc_cluster.cluster.name, "-q", "--output", "json"]
 }
 output "instance_ip_addr" {
   value = data.external.workers.result
