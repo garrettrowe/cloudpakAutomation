@@ -9,6 +9,7 @@ locals {
     demo = split("_", local.demoandindustry)[1]
     industry = split("_", local.demoandindustry)[0]
     companysafe = lower(replace(local.company, "_", "-"))
+    workers = 4
 }
 locals {
     entitlementKey = var.entitlementKey != "null" ? var.entitlementKey : ibm_iam_service_api_key.automationkey.apikey
@@ -164,7 +165,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
   vpc_id            = ibm_is_vpc.testacc_vpc.id
   kube_version      = "4.6_openshift"
   flavor            = "bx2.16x64"
-  worker_count      = "4"
+  worker_count      = local.workers
   entitlement       = "cloud_pak"
   disable_public_service_endpoint = false
   cos_instance_crn  = ibm_resource_instance.cos_cp4d.id
@@ -174,6 +175,14 @@ resource "ibm_container_vpc_cluster" "cluster" {
       name      = ibm_is_subnet.testacc_subnet.zone
     }
 }
+
+data "external" "workers" {
+  program = ["ibmcloud", "oc worker ls --cluster ${ibm_container_vpc_cluster.cluster.name} -q --output json"]
+}
+output "instance_ip_addr" {
+  value = external.workers.result
+}
+
 
 resource "ibm_container_addons" "addons" {
   cluster = ibm_container_vpc_cluster.cluster.name
@@ -213,6 +222,7 @@ wget -q -O cpd-cli.tar.gz https://github.com/IBM/cpd-cli/releases/download/v3.5.
 tar -xf cpd-cli.tar.gz
 sed -i 's/<entitlement key>/${local.entitlementKey}/g' repo.yaml
 ./cpd-cli adm  --repo ./repo.yaml  --assembly lite  --namespace $${NAMESPACE} --accept-all-licenses --apply
+./cpd-cli install --repo ./repo.yaml --assembly scheduler --accept-all-licenses --namespace $${NAMESPACE} --storageclass Storage_class_name --transfer-image-to $${CPD_REGISTRY} --cluster-pull-prefix Registry_from_cluster --ask-push-registry-credentials --latest-dependency 
 EOT
   }
 }
