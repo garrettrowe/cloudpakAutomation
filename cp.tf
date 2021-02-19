@@ -212,7 +212,7 @@ chmod 755 cloudctl-linux-amd64
 wget -O cp4d.tar.gz https://github.com/IBM/cloud-pak/archive/cp4d-2.5.0.tar.gz
 tar -xf cp4d.tar.gz
 cloudctl-linux-amd64/cloudctl case launch --case ibm-cp-datacore --namespace $${NAMESPACE} --inventory cpdMetaOperatorSetup --action install-operator --tolerance=1 --args "--entitledRegistry $${CPD_REGISTRY} --entitledUser $${CPD_REGISTRY_USER} --entitledPass $${CPD_REGISTRY_PASSWORD}"
-oc get pods -n ${NAMESPACE} -l name=ibm-cp-data-operator
+oc get pods -n $${NAMESPACE} -l name=ibm-cp-data-operator
 EOT
   }
 }
