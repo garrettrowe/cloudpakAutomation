@@ -51,6 +51,7 @@ volid='oc describe pv $registry_pv -n openshift-image-registry | grep volumeId'
 IFS='='
 read -ra vol <<< '$volid'
 volume=$${vol[1]}
+echo volume id is $volume
 ibmcloud sl file volume-detail $volume
 if [[ $? -eq 0 ]]; then
 capval="ibmcloud sl file volume-detail $volume | awk '$1==\"Capacity\" {print $3}'"
@@ -59,12 +60,16 @@ capval="ibmcloud sl file volume-detail $volume | awk '$1==\"Capacity\" {print $3
      for i in {1..10}; do
        cap="ibmcloud sl file volume-detail $volume | awk '$1==\"Capacity\" {print $3}'"
        if [[ $cap == 200 ]]; then
+         echo "Image registry Volume is modified"
          break
        else
          sleep 30
        fi
-    done
+       echo "Looks like it is taking time to reflect the updated size for Image Regsitry volume. please confirm that the size has been modified and start the CP4D installation"
+     done
   fi
+  else
+  echo "The logged-in user does not have the privilege required to modify the storage. Before proceeding with the install, please make sure the registry volume size has been modified"
 fi
 EOT
 }
@@ -184,16 +189,19 @@ resource "ibm_container_addons" "addons" {
   } 
 }
 
-resource "null_resource" "oc_setup10" {
+resource "null_resource" "oc_setup11" {
   provisioner "local-exec" { 
     command = <<EOT
 ibmcloud config --check-version=false
 ibmcloud login --apikey ${ibm_iam_service_api_key.automationkey.apikey} -g ${ibm_resource_group.group.name} --no-region
 ibmcloud oc cluster config -c ${ibm_container_vpc_cluster.cluster.name} --admin
-ibmcloud oc annotate route zen-cpd --overwrite haproxy.router.openshift.io/timeout=360s --cluster ${ibm_container_vpc_cluster.cluster.id}
 echo "oc login"
 oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}
+echo "oc create"
 oc create -f ${local_file.kernel.filename}
+echo "oc annotate"
+oc annotate route zen-cpd --overwrite haproxy.router.openshift.io/timeout=360s
+echo "oc volume modify"
 ./${local_file.modifyVol.filename}
 EOT
   }
