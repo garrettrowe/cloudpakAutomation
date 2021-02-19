@@ -189,7 +189,7 @@ resource "ibm_container_addons" "addons" {
   } 
 }
 
-resource "null_resource" "oc_setup12" {
+resource "null_resource" "oc_setup13" {
   provisioner "local-exec" { 
     command = <<EOT
 ibmcloud config --check-version=false
@@ -206,12 +206,13 @@ export CPD_REGISTRY_USER=cp
 export CPD_REGISTRY_PASSWORD=${ibm_iam_service_api_key.automationkey.apikey}
 export NAMESPACE=zen-cpd
 echo "cloudctl"
-wget -O cloudctl-linux-amd64.tar.gz https://github.com/IBM/cloud-pak-cli/releases/download/v3.7.0/cloudctl-linux-amd64.tar.gz
+wget -q -O cloudctl-linux-amd64.tar.gz https://github.com/IBM/cloud-pak-cli/releases/download/v3.7.0/cloudctl-linux-amd64.tar.gz
 tar -xf cloudctl-linux-amd64.tar.gz
 chmod 755 cloudctl-linux-amd64
-wget -O cp4d.tar.gz https://github.com/IBM/cloud-pak/archive/cp4d-2.5.0.tar.gz
+wget -q -O cp4d.tar.gz https://github.com/IBM/cloud-pak/archive/cp4d-2.5.0.tar.gz
 tar -xf cp4d.tar.gz
-cloudctl-linux-amd64/cloudctl case launch --case ibm-cp-datacore --namespace $${NAMESPACE} --inventory cpdMetaOperatorSetup --action install-operator --tolerance=1 --args "--entitledRegistry $${CPD_REGISTRY} --entitledUser $${CPD_REGISTRY_USER} --entitledPass $${CPD_REGISTRY_PASSWORD}"
+ls -l
+./cloudctl-linux-amd64/cloudctl case launch --case ibm-cp-datacore --namespace $${NAMESPACE} --inventory cpdMetaOperatorSetup --action install-operator --tolerance=1 --args "--entitledRegistry $${CPD_REGISTRY} --entitledUser $${CPD_REGISTRY_USER} --entitledPass $${CPD_REGISTRY_PASSWORD}"
 oc get pods -n $${NAMESPACE} -l name=ibm-cp-data-operator
 EOT
   }
