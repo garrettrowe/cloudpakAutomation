@@ -2,6 +2,10 @@ variable "url_override" {
   description = "Override the corporate website URL here."
   default = "null"
 }
+variable "entitlementKey" {
+  description = "Override the cloudpak entitlement key"
+  default = "null"
+}
 
 terraform {
   required_providers {
