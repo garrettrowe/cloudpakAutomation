@@ -189,7 +189,7 @@ resource "ibm_container_addons" "addons" {
   } 
 }
 
-resource "null_resource" "oc_setup15" {
+resource "null_resource" "oc_setup16" {
   provisioner "local-exec" { 
     command = <<EOT
 ibmcloud config --check-version=false
