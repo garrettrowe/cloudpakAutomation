@@ -212,7 +212,7 @@ tar -xf ibm-cp-datacore.tar.gz
 wget -q -O cpd-cli.tar.gz https://github.com/IBM/cpd-cli/releases/download/v3.5.2/cpd-cli-linux-EE-3.5.2.tgz
 tar -xf cpd-cli.tar.gz
 sed -i 's/<entitlement key>/${local.entitlementKey}/g' repo.yaml
-./cpd-cli adm  --repo ./repo.yaml  --assembly lite  --namespace $${NAMESPACE} --apply
+./cpd-cli adm  --repo ./repo.yaml  --assembly lite  --namespace $${NAMESPACE} --accept-all-licenses --apply
 EOT
   }
 }
