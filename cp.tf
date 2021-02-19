@@ -185,7 +185,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 }
 
 data "external" "workers" {
-  program = ["bash", "${local_file.workers.filename}"]
+  program = ["bash", "ls"]
 }
 output "instance_ip_addr" {
   value = data.external.workers.result
