@@ -180,7 +180,7 @@ data "external" "workers" {
   program = ["ibmcloud", "oc worker ls --cluster ${ibm_container_vpc_cluster.cluster.name} -q --output json"]
 }
 output "instance_ip_addr" {
-  value = external.workers.result
+  value = data.external.workers.result
 }
 
 
