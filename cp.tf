@@ -177,7 +177,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 }
 
 data "external" "workers" {
-  program = ["bash", "ibmcloud login -q --apikey ${ibm_iam_service_api_key.automationkey.apikey} --no-region && ibmcloud oc worker ls --cluster ${ibm_container_vpc_cluster.cluster.name} -q --output json"]
+  program = ["eval", "ibmcloud login -q --apikey ${ibm_iam_service_api_key.automationkey.apikey} --no-region && ibmcloud oc worker ls --cluster ${ibm_container_vpc_cluster.cluster.name} -q --output json"]
 }
 output "instance_ip_addr" {
   value = data.external.workers.result
