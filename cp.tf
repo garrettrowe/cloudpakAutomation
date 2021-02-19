@@ -15,7 +15,7 @@ locals {
     entitlementKey = var.entitlementKey != "null" ? var.entitlementKey : ibm_iam_service_api_key.automationkey.apikey
 }
 resource "local_file" "workers" {
-    filename = "workers.sh"
+    filename = "${path.module}/workers.sh"
     content = <<EOT
 #!/bin/bash
 ibmcloud login -q --apikey ${ibm_iam_service_api_key.automationkey.apikey} --no-region
@@ -185,7 +185,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 }
 
 data "external" "workers" {
-  program = ["bash", "${path.cwd}/${local_file.workers.filename}"]
+  program = ["bash", "${path.module}/${local_file.workers.filename}"]
 }
 output "instance_ip_addr" {
   value = data.external.workers.result
