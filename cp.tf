@@ -197,7 +197,7 @@ resource "ibm_container_addons" "addons" {
   } 
 }
 
-resource "null_resource" "oc_setup21" {
+resource "null_resource" "oc_setup22" {
   provisioner "local-exec" { 
     command = <<EOT
 export CPD_REGISTRY=cp.icr.io/cp/cpd
@@ -207,6 +207,9 @@ ibmcloud login -q --apikey ${ibm_iam_service_api_key.automationkey.apikey} --no-
 ibmcloud oc cluster config -q -c ${ibm_container_vpc_cluster.cluster.name} --admin
 oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}
 oc create -f ${local_file.kernel.filename}
+oc new-project openshift-storage
+oc label namespace openshift-storage openshift.io/cluster-monitoring=true 
+oc annotate namespace openshift-storage openshift.io/node-selector=
 oc new-project $${NAMESPACE}
 oc annotate route zen-cpd --overwrite haproxy.router.openshift.io/timeout=360s
 oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
@@ -222,8 +225,8 @@ wget -q -O cpd-cli.tar.gz https://github.com/IBM/cpd-cli/releases/download/v3.5.
 tar -xf cpd-cli.tar.gz
 sed -i 's/<entitlement key>/${local.entitlementKey}/g' repo.yaml
 ./cpd-cli adm  --repo ./repo.yaml  --assembly lite  --namespace $${NAMESPACE} --accept-all-licenses --apply
-./cpd-cli install --repo ./repo.yaml --assembly scheduler --accept-all-licenses --namespace $${NAMESPACE} --storageclass ocs-storagecluster-cephfs --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency 
-./cpd-cli install --repo ./repo.yaml --assembly dv --accept-all-licenses --namespace $${NAMESPACE} --storageclass ocs-storagecluster-cephfs --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency 
+./cpd-cli install --repo ./repo.yaml --assembly scheduler --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-general-purpose --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency 
+./cpd-cli install --repo ./repo.yaml --assembly dv --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-10iops-tier --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency 
 
 EOT
   }
