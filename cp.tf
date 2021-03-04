@@ -91,10 +91,10 @@ resource "ibm_resource_group" "group" {
   name = local.company
 }
 resource "ibm_iam_service_id" "serviceID" {
-  name = "automation"
+  name = "${local.companysafe}-svc"
 }
 resource "ibm_iam_service_api_key" "automationkey" {
-  name = "automationkey"
+  name = "${local.companysafe}-key"
   iam_service_id = ibm_iam_service_id.serviceID.iam_id
 }
 resource "ibm_iam_access_group_members" "accgroupmem" {
@@ -209,6 +209,9 @@ oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}
 oc create -f ${local_file.kernel.filename}
 oc new-project $${NAMESPACE}
 oc annotate route zen-cpd --overwrite haproxy.router.openshift.io/timeout=360s
+oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
+export LOCAL_REGISTRY=image-registry.openshift-image-registry.svc:5000
+export DOCKER_REGISTRY_PREFIX=$(oc get route/default-route -n openshift-image-registry --template='{{ .spec.host }}')
 wget -q -O cloudctl-linux-amd64.tar.gz https://github.com/IBM/cloud-pak-cli/releases/download/v3.7.0/cloudctl-linux-amd64.tar.gz
 tar -xf cloudctl-linux-amd64.tar.gz
 chmod 755 cloudctl-linux-amd64
@@ -219,7 +222,9 @@ wget -q -O cpd-cli.tar.gz https://github.com/IBM/cpd-cli/releases/download/v3.5.
 tar -xf cpd-cli.tar.gz
 sed -i 's/<entitlement key>/${local.entitlementKey}/g' repo.yaml
 ./cpd-cli adm  --repo ./repo.yaml  --assembly lite  --namespace $${NAMESPACE} --accept-all-licenses --apply
-./cpd-cli install --repo ./repo.yaml --assembly scheduler --accept-all-licenses --namespace $${NAMESPACE} --storageclass Storage_class_name --transfer-image-to $${CPD_REGISTRY} --cluster-pull-prefix Registry_from_cluster --ask-push-registry-credentials --latest-dependency 
+./cpd-cli install --repo ./repo.yaml --assembly scheduler --accept-all-licenses --namespace $${NAMESPACE} --storageclass openshift-storage.noobaa.io --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency 
+./cpd-cli install --repo ./repo.yaml --assembly dv --accept-all-licenses --namespace $${NAMESPACE} --storageclass openshift-storage.noobaa.io --transfer-image-to=${DOCKER_REGISTRY_PREFIX}/${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency 
+
 EOT
   }
 }
