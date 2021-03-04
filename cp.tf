@@ -197,7 +197,7 @@ resource "ibm_container_addons" "addons" {
   } 
 }
 
-resource "null_resource" "oc_setup19" {
+resource "null_resource" "oc_setup20" {
   provisioner "local-exec" { 
     command = <<EOT
 export CPD_REGISTRY=cp.icr.io/cp/cpd
