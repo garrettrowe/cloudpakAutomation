@@ -223,7 +223,7 @@ tar -xf cpd-cli.tar.gz
 sed -i 's/<entitlement key>/${local.entitlementKey}/g' repo.yaml
 ./cpd-cli adm  --repo ./repo.yaml  --assembly lite  --namespace $${NAMESPACE} --accept-all-licenses --apply
 ./cpd-cli install --repo ./repo.yaml --assembly scheduler --accept-all-licenses --namespace $${NAMESPACE} --storageclass openshift-storage.noobaa.io --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency 
-./cpd-cli install --repo ./repo.yaml --assembly dv --accept-all-licenses --namespace $${NAMESPACE} --storageclass openshift-storage.noobaa.io --transfer-image-to=${DOCKER_REGISTRY_PREFIX}/${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency 
+./cpd-cli install --repo ./repo.yaml --assembly dv --accept-all-licenses --namespace $${NAMESPACE} --storageclass openshift-storage.noobaa.io --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency 
 
 EOT
   }
