@@ -197,7 +197,7 @@ resource "ibm_container_addons" "addons" {
   } 
 }
 
-resource "null_resource" "oc_setup22" {
+resource "null_resource" "oc_setup24" {
   provisioner "local-exec" { 
     command = <<EOT
 export CPD_REGISTRY=cp.icr.io/cp/cpd
@@ -226,7 +226,12 @@ tar -xf cpd-cli.tar.gz
 sed -i 's/<entitlement key>/${local.entitlementKey}/g' repo.yaml
 ./cpd-cli adm  --repo ./repo.yaml  --assembly lite  --namespace $${NAMESPACE} --accept-all-licenses --apply
 ./cpd-cli install --repo ./repo.yaml --assembly scheduler --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-general-purpose --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency 
-./cpd-cli install --repo ./repo.yaml --assembly dv --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-10iops-tier --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency 
+./cpd-cli adm --repo ./repo.yaml  --namespace $${NAMESPACE} --apply --accept-all-licenses --assembly dv
+./cpd-cli install --repo ./repo.yaml --assembly dv --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-10iops-tier --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency --target-registry-username=ocadmin  --target-registry-password=$$(oc whoami -t)
+./cpd-cli adm --repo ./repo.yaml  --namespace $${NAMESPACE} --apply --accept-all-licenses --assembly wsl
+./cpd-cli install --repo ./repo.yaml --assembly wsl --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-10iops-tier --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency --target-registry-username=ocadmin  --target-registry-password=$$(oc whoami -t)
+./cpd-cli adm --repo ./repo.yaml  --namespace $${NAMESPACE} --apply --accept-all-licenses --assembly db2wh
+./cpd-cli install --repo ./repo.yaml --assembly db2wh --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-10iops-tier --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency --target-registry-username=ocadmin  --target-registry-password=$$(oc whoami -t)
 
 EOT
   }
