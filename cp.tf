@@ -197,14 +197,14 @@ resource "ibm_container_addons" "addons" {
   } 
 }
 
-resource "null_resource" "oc_setup25" {
+resource "null_resource" "oc_setup26" {
   provisioner "local-exec" { 
     command = <<EOT
 export CPD_REGISTRY=cp.icr.io/cp/cpd
 export NAMESPACE=zen-cpd
 ibmcloud config --check-version=false
 ibmcloud login -q --apikey ${ibm_iam_service_api_key.automationkey.apikey} --no-region
-export OCPWD=$$(oc whoami -t)
+export OCPWD=$(oc whoami -t)
 ibmcloud oc cluster config -q -c ${ibm_container_vpc_cluster.cluster.name} --admin
 oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}
 oc create -f ${local_file.kernel.filename}
