@@ -204,9 +204,9 @@ export CPD_REGISTRY=cp.icr.io/cp/cpd
 export NAMESPACE=zen-cpd
 ibmcloud config --check-version=false
 ibmcloud login -q --apikey ${ibm_iam_service_api_key.automationkey.apikey} --no-region
-export OCPWD=$(oc whoami -t)
 ibmcloud oc cluster config -q -c ${ibm_container_vpc_cluster.cluster.name} --admin
 oc login -u apikey -p ${ibm_iam_service_api_key.automationkey.apikey}
+export OCPWD=$(oc whoami -t)
 oc create -f ${local_file.kernel.filename}
 oc create namespace openshift-storage
 oc label namespace openshift-storage openshift.io/cluster-monitoring=true 
@@ -226,15 +226,15 @@ wget -q -O cpd-cli.tar.gz https://github.com/IBM/cpd-cli/releases/download/v3.5.
 tar -xf cpd-cli.tar.gz
 sed -i 's/<entitlement key>/${local.entitlementKey}/g' repo.yaml
 ./cpd-cli adm  --repo ./repo.yaml  --assembly scheduler  --namespace $${NAMESPACE} --accept-all-licenses --apply
-./cpd-cli install --repo ./repo.yaml --assembly scheduler --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-general-purpose --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency --target-registry-username=admin  --target-registry-password=${ibm_iam_service_api_key.automationkey.apikey}
+./cpd-cli install --repo ./repo.yaml --assembly scheduler --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-general-purpose --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency --target-registry-username=admin  --target-registry-password=$${OCPWD}
 ./cpd-cli adm  --repo ./repo.yaml  --assembly lite  --namespace $${NAMESPACE} --accept-all-licenses --apply
-./cpd-cli install --repo ./repo.yaml --assembly lite --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-general-purpose --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency --target-registry-username=admin  --target-registry-password=${ibm_iam_service_api_key.automationkey.apikey}
+./cpd-cli install --repo ./repo.yaml --assembly lite --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-general-purpose --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency --target-registry-username=admin  --target-registry-password=$${OCPWD}
 ./cpd-cli adm --repo ./repo.yaml  --namespace $${NAMESPACE} --apply --accept-all-licenses --assembly dv
-./cpd-cli install --repo ./repo.yaml --assembly dv --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-10iops-tier --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency --target-registry-username=admin  --target-registry-password=${ibm_iam_service_api_key.automationkey.apikey}
+./cpd-cli install --repo ./repo.yaml --assembly dv --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-10iops-tier --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency --target-registry-username=admin  --target-registry-password=$${OCPWD}
 ./cpd-cli adm --repo ./repo.yaml  --namespace $${NAMESPACE} --apply --accept-all-licenses --assembly wsl
-./cpd-cli install --repo ./repo.yaml --assembly wsl --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-10iops-tier --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency --target-registry-username=admin  --target-registry-password=${ibm_iam_service_api_key.automationkey.apikey}
+./cpd-cli install --repo ./repo.yaml --assembly wsl --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-10iops-tier --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency --target-registry-username=admin  --target-registry-password=$${OCPWD}
 ./cpd-cli adm --repo ./repo.yaml  --namespace $${NAMESPACE} --apply --accept-all-licenses --assembly db2wh
-./cpd-cli install --repo ./repo.yaml --assembly db2wh --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-10iops-tier --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency  --target-registry-username=admin  --target-registry-password=${ibm_iam_service_api_key.automationkey.apikey}
+./cpd-cli install --repo ./repo.yaml --assembly db2wh --accept-all-licenses --namespace $${NAMESPACE} --storageclass ibmc-vpc-block-10iops-tier --transfer-image-to=$${DOCKER_REGISTRY_PREFIX}/$${NAMESPACE} --cluster-pull-prefix $${LOCAL_REGISTRY}/$${NAMESPACE} --insecure-skip-tls-verify --latest-dependency  --target-registry-username=admin  --target-registry-password=$${OCPWD}
 
 EOT
   }
